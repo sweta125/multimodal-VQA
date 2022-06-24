@@ -1,0 +1,92 @@
+---
+title: "plots_midterm"
+author: "Sweta Kotha"
+date: "11/12/2020"
+output: pdf_document
+---
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+library(wordcloud)
+```
+
+```{r}
+#from m4c paper; m4c achieves 39.40% accuracy on validation set (39.01% on test) on TextVQA
+#from m4c paper; m4c achieves 40.55% accuracy on validation set (40.46% on test) on TextVQA when trained in conjunction with STVQA
+#from m4c paper; m4c achieves 38.05% accuracy val, 0.472 ANLS val, and 0.462 ANLS test on just STVQA
+```
+
+```{r}
+#my model implementation
+stvqa_val_acc = 49.66
+textvqa_val_acc = 37.40
+
+#LoRRA: TextVQA: 27.47%, ST-VQA: 23.49%
+  
+accuracies=c(textvqa_val_acc, stvqa_val_acc, textvqa_val_acc_withstvqa)
+df = data.frame(dataset=c('ST-VQA', 'TextVQA', 'ST-VQA', 'TextVQA', 'ST-VQA', 'TextVQA'), model=c("M4C", "M4C", "LoRRA", "LoRRA", "Pythia", "Pythia"), num=c(49.66, 37.40, 23.49, 27.47, NA, 10.06))
+```
+
+```{r}
+ggplot(df, aes(x = model, y=num, fill = dataset)) + geom_bar(stat = "identity", position="dodge") + coord_cartesian(ylim=c(0,100)) + labs(title="Model Performance", x="Model", y="Accuracy", fill="Dataset")
+```
+
+
+```{r}
+df = data.frame(type=c("1 word correct", "2 tokens correct", "1 token incorrect", "2 tokens incorrect"), corr=c("correct", "correct", "incorrect", "incorrect"), words=c("1 answer", "2 answers", "1 answer", "2 answers"), num=c(1162, 143, 1118, 205))
+```
+
+```{r}
+df
+```
+
+```{r}
+ggplot(df, aes(x = words, y=num, fill = corr)) + geom_bar(stat = "identity", position="dodge") + coord_cartesian(ylim=c(0,1200)) + labs(x="Number Answers", y="Frequency", fill="Prediction")
+```
+
+OR CAN JUST STATE RATIOS
+
+```{r}
+1118/205
+1162/143
+```
+
+```{r}
+df1 = data.frame(corr=c("incorrect", "incorrect", "correct", "correct"), words=c("OCR", "Vocab", "OCR", "Vocab"), num=c(823, 967, 1433, 366))
+df2 = data.frame(corr=c("incorrect", "incorrect", "correct", "correct"), words=c("OCR", "Vocab", "OCR", "Vocab"), num=c(2559, 2219, 1359, 1023))
+```
+
+```{r}
+stvqa <- ggplot(df1, aes(x = words, y=num, fill = corr)) + geom_bar(stat = "identity", position="dodge") + coord_cartesian(ylim=c(0,1500))+ labs(subtitle="ST-VQA - Hierarchical Attention", x="Prediction Source", y="Frequency", fill="prediction")
+textvqa <- ggplot(df2, aes(x = words, y=num, fill = corr)) + geom_bar(stat = "identity", position="dodge") + coord_cartesian(ylim=c(0,2600)) + labs(subtitle="TextVQA", x="Prediction Source", y="Frequency", fill="prediction")
+grid.arrange(stvqa, textvqa, ncol = 2)
+```
+
+QUESTION TOKENS -> at least at glance at words look  the same
+WRONG VERSUS RIGHT -> CAN'T SEE A PATTERN IN STVQA OR TEXTVQA
+the types of questions between  those right and wrong seem similar enough -> colors, spatial relation, numbers, etc.
+(maybe just include for either stvqa or textvqa)
+```{r}
+#stvqa_wrong
+df = data.frame(word=c('the', '?', 'What', 'is', 'of', 'on', 'in', 'name', 'this', 'number', 'sign', 'does', 'are', 'what', 'written', 'word', 'to', 'brand', 'say', 'bus', 'How', 'right', "'s", 'left', 'white', 'red', 'many', 'top', 'first', 'at'), freq=c(1622, 1241, 983, 897, 456, 450, 197, 179, 148, 133, 129, 120, 117, 105, 102, 96, 75, 69, 67, 65, 58, 50, 49, 49, 47, 47, 44, 44, 41, 40))
+```
+
+```{r}
+wordcloud(words = df$word, freq = df$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+```{r}
+#stvqa_right
+df = data.frame(word=c('the', '?', 'What', 'is', 'on', 'of', 'name', 'sign', 'in', 'this', 'number', 'does', 'written', 'word', 'say', 'bus', 'what', 'are', 'red', 'picture', 'street', 'brand', 'bottom', 'top', 'photo', "'s", 'at', 'year', 'company', 'train'), freq=c(1648, 1219, 1052, 951, 444, 418, 218, 192, 179, 158, 158, 136, 133, 106, 95, 94, 88, 75, 70, 60, 57, 54, 53, 52, 51, 51, 49, 49, 49, 49))
+```
+
+```{r}
+wordcloud(words = df$word, freq = df$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+WHATS MORE INTERESTING IS TO LOOK AT TYPES OF ANSWERS
