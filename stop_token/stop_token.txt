@@ -1,0 +1,32 @@
+﻿m4c.py
+_build_output
+* Define linear layer for stop token generation with the same dimensions as the classifier layer but with output dimension of 1 (lines: 171-176)
+
+
+_forward_output
+* Get logit outputs from linear layer [B, L] (line: 291)
+* Add logits to result dictionary (line: 293)
+
+
+_forward_mmt_and_output
+* During inference:
+   * Normalise stop token logits through sigmoid function (line: 313)
+   * Find indices where stop token probability is greater than 0.5 (line: 314)
+   * Replace the score probability with infinity for the indices (line: 319)
+
+
+losses.py
+M4CDecodingBCEWithMaskLossStop (lines: 563-592)
+* stop_scores: predicted stop token logits (line: 571)
+* Get stop token targets by creating an array of zero and adding “1” if target array at that index is “2”, which is the index of stop token (line: 574-579)
+* Calculate stop token loss (line: 584-585)
+* Add stop token loss to the overall token loss (line: 591)
+
+
+defaults_stop.yaml
+* Changed losses to m4c_decoding_bce_with_mask_stop (line: 4)
+
+
+Concerns
+* The dimension of the stop token linear layer
+* Specifying the score as infinity during inference
